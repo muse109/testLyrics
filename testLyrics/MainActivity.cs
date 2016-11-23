@@ -12,7 +12,20 @@ namespace testLyrics
     [Activity(Label = "testLyrics", MainLauncher = true, Icon = "@drawable/icon")]
     public class MainActivity : Activity
     {
-     
+        public static bool pausa { get; set; }
+
+        protected override void OnPause()
+        {
+            base.OnPause();
+
+            pausa = true;
+        }
+
+        protected override void OnResume()
+        {
+            base.OnResume();
+            pausa = false;
+        }
 
         protected override void OnCreate(Bundle bundle)
         {
@@ -115,6 +128,7 @@ namespace testLyrics
             if (cancion != "-1")
             {
                 SetInfo(Artista, cancion, Album,Intent);
+                UnregisterReceiver(lbr);
             }
 
 
@@ -137,6 +151,7 @@ namespace testLyrics
             txtAlbum.Text = Album;
 
             intent.PutExtra("Cancion", "-1");
+          
 
         }
 
@@ -145,25 +160,30 @@ namespace testLyrics
         {
             public override void OnReceive(Context context, Intent intent)
             {
-                string action = intent.Action;
-                string cmd = intent.GetStringExtra("command");
-                Log.Verbose("mIntentReceiver.onReceive ", action + " / " + cmd);
-                string lyric = intent.GetStringExtra("lyric");
-                string artist1 = intent.GetStringExtra(MediaStore.Audio.AudioColumns.Artist);
-                string album1 = intent.GetStringExtra(MediaStore.Audio.AlbumColumns.Album);
-                string track1 = intent.GetStringExtra(MediaStore.Audio.AudioColumns.Track);
-                long duration1 = intent.GetLongExtra(MediaStore.Audio.AudioColumns.Duration, 0);
+                if (!pausa) {
+
+                    string action = intent.Action;
+                    string cmd = intent.GetStringExtra("command");
+                    Log.Verbose("mIntentReceiver.onReceive ", action + " / " + cmd);
+                    string lyric = intent.GetStringExtra("lyric");
+                    string artist1 = intent.GetStringExtra(MediaStore.Audio.AudioColumns.Artist);
+                    string album1 = intent.GetStringExtra(MediaStore.Audio.AlbumColumns.Album);
+                    string track1 = intent.GetStringExtra(MediaStore.Audio.AudioColumns.Track);
+                    long duration1 = intent.GetLongExtra(MediaStore.Audio.AudioColumns.Duration, 0);
 
 
-                //Toast.MakeText(context, "Command : " + action + "\n Artist : " + artist1 + "\n Album :" + album1 + "\n Track : " + track1 + "\n Lyric : " + lyric, ToastLength.Long).Show();
+                    //Toast.MakeText(context, "Command : " + action + "\n Artist : " + artist1 + "\n Album :" + album1 + "\n Track : " + track1 + "\n Lyric : " + lyric, ToastLength.Long).Show();
 
-              
-                Intent it = new Intent(context,typeof(MainActivity));
-               
-                it.PutExtra("Artista", artist1);
-                it.PutExtra("Album", album1);
-                it.PutExtra("Cancion", track1);
-                context.StartActivity(it);
+
+
+                    Intent it = new Intent(context, typeof(MainActivity));
+
+                    it.PutExtra("Artista", artist1);
+                    it.PutExtra("Album", album1);
+                    it.PutExtra("Cancion", track1);
+                    context.StartActivity(it);
+                }
+                
 
 
                 // //String action = intent.Getac();
