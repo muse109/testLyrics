@@ -5,12 +5,14 @@ using Android.Content;
 using System;
 using Android.Util;
 using Android.Provider;
+using Android.Media;
 
 namespace testLyrics
 {
     [Activity(Label = "testLyrics", MainLauncher = true, Icon = "@drawable/icon")]
     public class MainActivity : Activity
     {
+     
 
         protected override void OnCreate(Bundle bundle)
         {
@@ -18,6 +20,10 @@ namespace testLyrics
 
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);
+
+
+
+            #region Broadcast
 
             var IntentFilter = new IntentFilter();
             //Google Android player
@@ -61,8 +67,8 @@ namespace testLyrics
             IntentFilter.AddAction("com.rhapsody.playstatechanged");
             IntentFilter.AddAction("com.rhapsody.metachanged");
             //PlayerPro 
-            //IntentFilter.AddAction("com.tbig.playerpro.playstatechanged");
-            IntentFilter.AddAction("com.tbig.playerpro.metachanged");
+            IntentFilter.AddAction("com.tbig.playerpro.playstatechanged");
+            //IntentFilter.AddAction("com.tbig.playerpro.metachanged");
             //IntentFilter.AddAction("com.tbig.playerpro.shufflechanged");
             //IntentFilter.AddAction("com.tbig.playerpro.repeatchanged");
             //IntentFilter.AddAction("com.tbig.playerpro.albumartchanged");
@@ -76,27 +82,62 @@ namespace testLyrics
             IntentFilter.AddAction("com.real.IMP.metachanged");
             //appollo
             IntentFilter.AddAction("com.andrew.apollo.metachanged");
-            
+
             //scrobblers detect for players (poweramp for example)
             //Last.fm
             IntentFilter.AddAction("fm.last.android.metachanged");
             IntentFilter.AddAction("fm.last.android.playbackpaused");
             IntentFilter.AddAction("fm.last.android.playbackcomplete");
             //A simple last.fm scrobbler
-          //  IntentFilter.AddAction("com.adam.aslfms.notify.playstatechanged");
+            //  IntentFilter.AddAction("com.adam.aslfms.notify.playstatechanged");
             //Scrobble Droid
             IntentFilter.AddAction("net.jjc1138.android.scrobbler.action.MUSIC_STATUS");
 
 
+
+
+            //  Toast.MakeText(this, registro.Extras.GetString("track").ToString(), ToastLength.Long).Show();
+
+            #endregion
             mReceiver lbr = new mReceiver();
-          var registro =  RegisterReceiver(lbr, IntentFilter);
+            var registro = RegisterReceiver(lbr, IntentFilter);
+
+            //AudioManager Manager = (AudioManager)this.GetSystemService(Context.AudioService);
+            //if (Manager.IsMusicActive)
+            //{
+
+            //    // do something - or do it not
+            //}
+
+            string cancion = Intent.GetStringExtra("Cancion") ?? "-1";
+            string Artista = Intent.GetStringExtra("Artista") ?? "-1";
+            string Album = Intent.GetStringExtra("Album") ?? "-1";
+            if (cancion != "-1")
+            {
+                SetInfo(Artista, cancion, Album,Intent);
+            }
 
 
-            Toast.MakeText(this, registro.Extras.GetString("track").ToString(), ToastLength.Long).Show();
+
+            //http://stackoverflow.com/questions/25215878/how-to-update-the-ui-of-activity-from-broadcastreceiver
 
 
-            
-           
+
+
+        }
+
+        public void SetInfo(string Artista, string Cancion, string Album, Intent intent) {
+
+            var txtArtista = FindViewById<TextView>(Resource.Id.txtArtista);
+            var txtCancion = FindViewById<TextView>(Resource.Id.txtCancion);
+            var txtAlbum = FindViewById<TextView>(Resource.Id.txtAlbum);
+
+            txtArtista.Text = Artista;
+            txtCancion.Text = Cancion;
+            txtAlbum.Text = Album;
+
+            intent.PutExtra("Cancion", "-1");
+
         }
 
         [BroadcastReceiver]
@@ -112,21 +153,32 @@ namespace testLyrics
                 string album1 = intent.GetStringExtra(MediaStore.Audio.AlbumColumns.Album);
                 string track1 = intent.GetStringExtra(MediaStore.Audio.AudioColumns.Track);
                 long duration1 = intent.GetLongExtra(MediaStore.Audio.AudioColumns.Duration, 0);
-                Toast.MakeText(context, "Command : " + action + "\n Artist : " + artist1 + "\n Album :" + album1 + "\n Track : " + track1 + "\n Lyric : " + lyric, ToastLength.Long).Show();
 
-            
 
-               // //String action = intent.Getac();
-               // string cmd = intent.GetStringExtra("command");
-               //// Log.v("tag ", action + " / " + cmd);
-               // string artist = intent.GetStringExtra("artist");
-               // string album = intent.GetStringExtra("album");
-               // string track = intent.GetStringExtra("track");
-               // //Log.v("tag", artist + ":" + album + ":" + track);
-               // Toast.MakeText(context, track + " " + artist + " ", ToastLength.Long).Show();
+                //Toast.MakeText(context, "Command : " + action + "\n Artist : " + artist1 + "\n Album :" + album1 + "\n Track : " + track1 + "\n Lyric : " + lyric, ToastLength.Long).Show();
+
+              
+                Intent it = new Intent(context,typeof(MainActivity));
+               
+                it.PutExtra("Artista", artist1);
+                it.PutExtra("Album", album1);
+                it.PutExtra("Cancion", track1);
+                context.StartActivity(it);
+
+
+                // //String action = intent.Getac();
+                // string cmd = intent.GetStringExtra("command");
+                //// Log.v("tag ", action + " / " + cmd);
+                // string artist = intent.GetStringExtra("artist");
+                // string album = intent.GetStringExtra("album");
+                // string track = intent.GetStringExtra("track");
+                // //Log.v("tag", artist + ":" + album + ":" + track);
+                // Toast.MakeText(context, track + " " + artist + " ", ToastLength.Long).Show();
             }
 
-          
+
+       
+
         }
 
 
